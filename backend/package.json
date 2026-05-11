@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "install": "^0.13.0",
+    "multer": "^2.1.1",
+    "npm": "^11.14.1",
+    "pinata-web3": "^0.5.4"
+  }
+}

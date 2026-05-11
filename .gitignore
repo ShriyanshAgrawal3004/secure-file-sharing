@@ -1,0 +1,48 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.pyd
+*.pyo
+*.pkl
+*.joblib
+*.egg-info/
+.eggs/
+
+# Virtual environments
+venv/
+.venv/
+
+# Env / secrets
+.env
+**/.env
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+
+# ---- Project runtime outputs ----
+backend/uploads/
+backend/encrypted/
+backend/decrypted/
+
+# ---- Node / frontend tooling (if used) ----
+node_modules/
+**/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# If you keep a local IPFS repo/cache here
+ipfs/
+
+# ---- ML / datasets ----
+ml_model/data/sample_files/
+ml_model/data/**/*.dmg
+ml_model/data/**/*.crdownload
+ml_model/data/**/*.zip
+ml_model/data/**/*.ipynb
+
+# Logs
+*.log

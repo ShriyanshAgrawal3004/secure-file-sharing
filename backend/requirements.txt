@@ -1,0 +1,6 @@
+flask 
+web3 
+cryptography 
+scikit-learn 
+ipfshttpclient 
+python-dotenv
