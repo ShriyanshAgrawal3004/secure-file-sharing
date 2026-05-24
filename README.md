@@ -178,32 +178,66 @@ At minimum, each file row should display:
 - access status
 
 ## Setup & Run
-### Backend
-```bash
-cd backend
-python -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-python app.py
-```
-
-## How to Continue This Project (Developer Guide)
-This section is a practical “handoff” guide for anyone cloning the repo and continuing development.
+This repo can be run fully locally (Ganache + Flask) with optional IPFS pinning via Pinata.
 
 ### Prerequisites
-- **Python 3.10+** (project currently uses newer Python locally; any modern 3.x should work)
-- **Ganache** (or any local Ethereum RPC) running at `http://127.0.0.1:7545`
-- **Pinata account** (or alternative IPFS pinning provider)
-- (Optional) Node.js + npm/pnpm if you rebuild the frontend with React/Vite
+- **Python 3.10+**
+- **Ganache** (or any local Ethereum JSON-RPC)
+  - default URL used by this project: `http://127.0.0.1:7545`
+- (Optional) **Node.js** if you want to run the placeholder frontend locally
+- (Optional) **Pinata** API keys if you want IPFS pinning to work
 
-### First-run checklist (after cloning)
-1. Create a virtual environment and install backend dependencies.
-2. Create `backend/.env` (copy from an `.env.example` if provided).
-3. Start Ganache and deploy the smart contract (then update contract address + ABI).
-4. Run the Flask backend and test upload/decrypt.
+### 1) Clone
+```bash
+git clone https://github.com/ShriyanshAgrawal3004/secure-file-sharing.git
+cd secure-file-sharing
+```
 
-### Environment variables (backend)
-Create `backend/.env`:
+### 2) Backend setup (Flask)
+```bash
+cd backend
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+Create `backend/.env` (see **Environment variables** below), then run:
+
+```bash
+python3 app.py
+```
+
+By default the API starts on `http://127.0.0.1:5000`.
+
+### 3) Local blockchain + contract deploy (Ganache)
+1. Start Ganache and ensure its RPC is reachable at `http://127.0.0.1:7545`.
+2. Deploy the contracts in `blockchain/` using your preferred tool:
+   - Remix (quickest)
+   - Truffle / Hardhat (recommended if you’ll iterate a lot)
+
+After deploying `blockchain/FileStorage.sol`, update these values:
+- `backend/contract_config.py`
+  - `CONTRACT_ADDRESS`
+  - `ABI` (must match the deployed contract)
+
+If you redeploy, these values must be updated again.
+
+### 4) Try the upload flow
+Open `http://127.0.0.1:5000/upload` in your browser and upload a file.
+
+The backend will:
+1) run ML prediction (algorithm selection)
+2) encrypt
+3) attempt IPFS pin (if configured)
+4) store IPFS hash on-chain
+
+### 5) Optional: run the placeholder frontend
+The current `frontend/` is a static HTML page.
+
+You can open `frontend/index.html` directly in the browser, or serve it.
+
+## Environment variables (backend)
+Create `backend/.env` (do **not** commit it):
 
 ```bash
 # Pinata (required if you want IPFS pinning to work)
@@ -213,24 +247,32 @@ PINATA_SECRET_API_KEY=...
 
 If IPFS upload fails with `NO_SCOPES_FOUND`, create a new Pinata key that has **pinning scopes**.
 
-### Running the backend on a different port
+## Quick verification (smoke test)
+There’s a lightweight script at `backend/smoke_flow.py` intended to quickly validate the end-to-end flow.
+
+Notes:
+- It assumes the backend is running locally.
+- It will upload a sample file and print the response.
+
+## What to edit (developer map)
+Common files you’ll touch:
+- **Upload / API wiring:** `backend/app.py`
+- **Encryption:** `backend/crypto_utils.py`
+- **IPFS integration:** `backend/ipfs_utils.py`
+- **Blockchain tx + reads/writes:** `backend/blockchain_utils.py`
+- **Contract address + ABI:** `backend/contract_config.py`
+- **ML inference:** `ml_model/predict.py`
+- **Feature extraction:** `ml_model/feature_extracter.py`
+
+## Running the backend on a different port
 If port `5000` is already in use:
 
 ```bash
 cd backend
-PORT=5001 python app.py
+PORT=5001 python3 app.py
 ```
 
-### Where to implement new features
-- **Upload / encryption pipeline:** `backend/app.py`
-- **Encryption algorithms:** `backend/crypto_utils.py`
-- **IPFS provider integration:** `backend/ipfs_utils.py`
-- **Blockchain write operations:** `backend/blockchain_utils.py`
-- **Contract config (address + ABI):** `backend/contract_config.py`
-- **ML prediction (model inference):** `ml_model/predict.py`
-- **Feature extraction:** `ml_model/feature_extracter.py`
-
-### Smart contract workflow (when you redeploy)
+## Smart contract workflow (when you redeploy)
 If you redeploy `blockchain/FileStorage.sol`, you must update:
 - `backend/contract_config.py` → `CONTRACT_ADDRESS`
 - `backend/contract_config.py` → `ABI`
@@ -238,7 +280,7 @@ If you redeploy `blockchain/FileStorage.sol`, you must update:
 Also ensure Ganache RPC in `backend/blockchain_utils.py` matches your local chain:
 - `ganache_url = "http://127.0.0.1:7545"`
 
-### ML model workflow (retraining / improving predictions)
+## ML model workflow (retraining / improving predictions)
 Current inference code loads a serialized model file and predicts an algorithm based on extracted features.
 
 Typical improvement loop:
@@ -254,7 +296,7 @@ Important: today the backend **actually encrypts** using only:
 
 If the model returns anything else (example: `RSA`), the backend currently falls back to AES.
 
-### Frontend build plan (recommended)
+## Frontend build plan (recommended)
 The current `frontend/index.html` is just a placeholder form.
 
 To build the “sophisticated” UI described above, create a separate frontend app that calls the Flask API:
@@ -268,7 +310,7 @@ Frontend implementation tips:
 - Show **hash cards** (IPFS hash + transaction hash) with copy buttons.
 - Include an “advanced” panel with raw JSON response for power users.
 
-### Troubleshooting
+## Troubleshooting
 **1) `POST /upload` returns an IPFS error**
 - Check `backend/.env` keys are set.
 - Fix Pinata key scopes (pinning permissions).
@@ -283,24 +325,10 @@ Frontend implementation tips:
 - Backend expects `AES` and `CHACHA`.
 - If your ML model returns `ChaCha20` or other labels, normalize them either in the model or in `backend/app.py` before encryption.
 
-### Suggested Git workflow
-- Do **not** commit secrets (`backend/.env`) or runtime outputs (`uploads/`, `encrypted/`, `decrypted/`).
-- Add a `.gitignore` and commit `backend/.env.example` for safe onboarding.
-- Use feature branches: `feat/frontend-dashboard`, `feat/ipfs-jwt`, etc.
-
-### Environment Configuration
-Create a `backend/.env` file with:
-```bash
-PINATA_API_KEY=...
-PINATA_SECRET_API_KEY=...
-```
-
-### Local Blockchain
-This project expects Ganache at:
-```
-http://127.0.0.1:7545
-```
-Update `backend/contract_config.py` if your contract address changes.
+## Suggested Git workflow
+- Do **not** commit secrets (`backend/.env`) or runtime outputs (`backend/uploads/`, `backend/encrypted/`, `backend/decrypted/`).
+- Consider adding `backend/.env.example` and a `.gitignore` for safe onboarding.
+- Use feature branches for larger work.
 
 ## Notes & Limitations
 - RSA hybrid encryption is planned but not yet implemented.

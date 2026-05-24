@@ -1,18 +1,82 @@
-CONTRACT_ADDRESS = "0xd9145CCE52D386f254917e481eB44e9943F39138"
+"""Web3 contract config.
 
+IMPORTANT:
+- After deploying `blockchain/FileAccess.sol` to your Ganache instance, update
+  CONTRACT_ADDRESS below to the deployed contract address.
+"""
+
+# Replace this with your deployed address (Ganache changes addresses if you restart or redeploy).
+CONTRACT_ADDRESS = "0xb4f631D4298DDA3133D1e8011b56DAC8c741cD44"
+# ABI for `blockchain/FileAccess.sol`
 ABI = [
   {
+    "anonymous": False,
     "inputs": [
       {
+        "indexed": True,
+        "internalType": "uint256",
+        "name": "fileId",
+        "type": "uint256"
+      },
+      {
+        "indexed": True,
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      },
+      {
+        "indexed": True,
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      }
+    ],
+    "name": "AccessGranted",
+    "type": "event"
+  },
+  {
+    "anonymous": False,
+    "inputs": [
+      {
+        "indexed": True,
+        "internalType": "uint256",
+        "name": "fileId",
+        "type": "uint256"
+      },
+      {
+        "indexed": True,
+        "internalType": "address",
+        "name": "requester",
+        "type": "address"
+      }
+    ],
+    "name": "AccessRequested",
+    "type": "event"
+  },
+  {
+    "anonymous": False,
+    "inputs": [
+      {
+        "indexed": True,
+        "internalType": "uint256",
+        "name": "fileId",
+        "type": "uint256"
+      },
+      {
+        "indexed": True,
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      },
+      {
+        "indexed": False,
         "internalType": "string",
-        "name": "_ipfsHash",
+        "name": "ipfsHash",
         "type": "string"
       }
     ],
-    "name": "addFile",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
+    "name": "FileStored",
+    "type": "event"
   },
   {
     "inputs": [
@@ -38,14 +102,22 @@ ABI = [
         "internalType": "uint256",
         "name": "fileId",
         "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "user",
-        "type": "address"
       }
     ],
-    "name": "revokeAccess",
+    "name": "requestAccess",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "ipfsHash",
+        "type": "string"
+      }
+    ],
+    "name": "storeFile",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -58,17 +130,17 @@ ABI = [
         "type": "uint256"
       },
       {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "accessRequests",
+    "outputs": [
+      {
         "internalType": "address",
         "name": "",
         "type": "address"
-      }
-    ],
-    "name": "access",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -98,6 +170,11 @@ ABI = [
     "name": "files",
     "outputs": [
       {
+        "internalType": "uint256",
+        "name": "id",
+        "type": "uint256"
+      },
+      {
         "internalType": "string",
         "name": "ipfsHash",
         "type": "string"
@@ -106,6 +183,25 @@ ABI = [
         "internalType": "address",
         "name": "owner",
         "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "fileId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getAccessRequests",
+    "outputs": [
+      {
+        "internalType": "address[]",
+        "name": "",
+        "type": "address[]"
       }
     ],
     "stateMutability": "view",
@@ -144,6 +240,30 @@ ABI = [
       }
     ],
     "name": "hasAccess",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "permissions",
     "outputs": [
       {
         "internalType": "bool",
