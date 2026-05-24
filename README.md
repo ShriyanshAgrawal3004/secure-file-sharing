@@ -210,10 +210,25 @@ python3 app.py
 By default the API starts on `http://127.0.0.1:5000`.
 
 ### 3) Local blockchain + contract deploy (Ganache)
-1. Start Ganache and ensure its RPC is reachable at `http://127.0.0.1:7545`.
-2. Deploy the contracts in `blockchain/` using your preferred tool:
-   - Remix (quickest)
-   - Truffle / Hardhat (recommended if you’ll iterate a lot)
+1. Start **Ganache** and ensure its RPC is reachable at `http://127.0.0.1:7545`.
+2. Deploy `blockchain/FileStorage.sol` using **Remix + Ganache** (no Hardhat/Truffle required):
+
+#### Deploy with Remix (step-by-step)
+1. Open Remix: https://remix.ethereum.org/
+2. In the left sidebar, create a file named `FileStorage.sol`.
+3. Copy/paste the contents of `blockchain/FileStorage.sol` from this repo into Remix.
+4. (Optional but recommended) Also add `blockchain/FileAccess.sol` if `FileStorage.sol` imports it.
+5. Go to **Solidity Compiler**:
+  - Select a compiler version compatible with the pragma in the contract.
+  - Click **Compile FileStorage.sol**.
+6. Go to **Deploy & Run Transactions**:
+  - **Environment**: choose **Web3 Provider**
+  - Remix will prompt for a provider URL → enter: `http://127.0.0.1:7545`
+  - Choose an account (Remix should show Ganache accounts).
+  - Select **FileStorage** in the contract dropdown.
+  - Click **Deploy**.
+7. Copy the deployed contract address from Remix.
+8. In Remix, open the compiled contract ("Compilation Details" / ABI section) and copy the **ABI JSON**.
 
 After deploying `blockchain/FileStorage.sol`, update these values:
 - `backend/contract_config.py`
@@ -221,6 +236,10 @@ After deploying `blockchain/FileStorage.sol`, update these values:
   - `ABI` (must match the deployed contract)
 
 If you redeploy, these values must be updated again.
+
+#### Notes (Ganache)
+- If you restart Ganache, contract addresses will change (unless you’re using a persistent workspace), so you’ll need to re-copy the address into `backend/contract_config.py`.
+- If you use a different RPC URL/port, also update it in `backend/blockchain_utils.py`.
 
 ### 4) Try the upload flow
 Open `http://127.0.0.1:5000/upload` in your browser and upload a file.
