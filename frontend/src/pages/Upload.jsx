@@ -1,13 +1,12 @@
-import axios from 'axios';
 import { motion } from 'framer-motion';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+import api from '../api.js';
 import EncryptionStepper from '../components/EncryptionStepper.jsx';
 import FileDropzone from '../components/FileDropzone.jsx';
 import HashCard from '../components/HashCard.jsx';
 import SensitivitySelector, { sensitivityLevels } from '../components/SensitivitySelector.jsx';
-
-const API_URL = 'http://127.0.0.1:5000/upload';
+import useAuth from '../hooks/useAuth.js';
 
 const container = {
   hidden: {},
@@ -22,13 +21,13 @@ const item = {
 };
 
 function fileIdFromResult(result) {
-  return result?.ipfs_hash ? `CV-${result.ipfs_hash.slice(-8).toUpperCase()}` : 'CV-PENDING';
+  return result?.file_id ? String(result.file_id) : 'CV-PENDING';
 }
 
 export default function Upload() {
+  const { walletAddress } = useAuth();
   const [fileMeta, setFileMeta] = useState(null);
   const [sensitivity, setSensitivity] = useState('HIGH');
-  const [ownerAddress, setOwnerAddress] = useState('');
   const [error, setError] = useState('');
   const [stage, setStage] = useState(0);
   const [elapsed, setElapsed] = useState(0);
@@ -52,7 +51,6 @@ export default function Upload() {
     timers.current.forEach(window.clearTimeout);
     timers.current = [];
     setFileMeta(null);
-    setOwnerAddress('');
     setError('');
     setStage(0);
     setElapsed(0);
@@ -63,11 +61,6 @@ export default function Upload() {
   async function submit() {
     if (!fileMeta?.file) {
       setError('UPLOAD BLOCKED: SELECT A FILE BEFORE ENCRYPTION');
-      return;
-    }
-
-    if (!ownerAddress.trim()) {
-      setError('UPLOAD BLOCKED: ENTER THE OWNER WALLET ADDRESS');
       return;
     }
 
@@ -86,10 +79,10 @@ export default function Upload() {
     const formData = new FormData();
     formData.append('file', fileMeta.file);
     formData.append('sensitivity', activeLevel.apiValue);
-    formData.append('owner_address', ownerAddress.trim());
+    formData.append('owner_address', walletAddress);
 
     try {
-      const response = await axios.post(API_URL, formData, {
+      const response = await api.post('/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       timers.current.forEach(window.clearTimeout);
@@ -136,6 +129,7 @@ export default function Upload() {
         </div>
 
         <div className="mt-6 grid gap-3 sm:grid-cols-2">
+          {result.file_id && <Link to={`/file/${result.file_id}`} className="cyan-button px-5 py-4 text-center text-sm">VIEW FILE →</Link>}
           <Link to="/vault" className="cyan-button px-5 py-4 text-center text-sm">VIEW IN VAULT →</Link>
           <button type="button" onClick={reset} className="amber-button px-5 py-4 text-sm">ENCRYPT ANOTHER</button>
         </div>
@@ -163,15 +157,10 @@ export default function Upload() {
           <SensitivitySelector value={sensitivity} onChange={setSensitivity} />
           <section className="panel p-5 sm:p-6">
             <p className="terminal-label text-xs">STEP 03 / COMMIT</p>
-            <label className="mt-4 block">
+            <div className="mt-4 border border-vault-border bg-black/30 p-4">
               <span className="terminal-label text-[11px]">OWNER WALLET ADDRESS</span>
-              <input
-                value={ownerAddress}
-                onChange={(event) => setOwnerAddress(event.target.value)}
-                placeholder="0x..."
-                className="mt-2 w-full border border-vault-border bg-black/30 px-4 py-3 font-display text-xs text-text-primary outline-none transition placeholder:text-text-muted focus:border-cyan focus:shadow-cyan"
-              />
-            </label>
+              <p className="mt-2 break-all font-display text-xs text-text-primary">{walletAddress}</p>
+            </div>
             <button
               type="button"
               onClick={submit}

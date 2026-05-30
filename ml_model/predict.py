@@ -1,7 +1,9 @@
 import pickle
+import os
 from feature_extracter import extract_features
 
-with open("/Users/shriyansh/Desktop/Project_Blockchain/New/secure-file-sharing/ml_model/model.pkl", "rb") as f:
+MODEL_PATH = os.path.join(os.path.dirname(__file__), "model.pkl")
+with open(MODEL_PATH, "rb") as f:
     model = pickle.load(f)
 
 

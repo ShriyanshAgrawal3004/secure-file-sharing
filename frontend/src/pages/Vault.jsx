@@ -1,18 +1,38 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import api from '../api.js';
 import FileTable from '../components/FileTable.jsx';
-import { mockFiles } from '../data/mockFiles.js';
+import useAuth from '../hooks/useAuth.js';
+import { fileToViewModel } from '../utils/format.js';
 
 export default function Vault() {
+  const { walletAddress } = useAuth();
   const [query, setQuery] = useState('');
   const [algorithm, setAlgorithm] = useState('ALL');
+  const [files, setFiles] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    let mounted = true;
+    setLoading(true);
+    setError('');
+    api
+      .get(`/user/${walletAddress}/files`)
+      .then((response) => mounted && setFiles((response.data.files || []).map(fileToViewModel)))
+      .catch((requestError) => mounted && setError(requestError.response?.data?.error || requestError.message))
+      .finally(() => mounted && setLoading(false));
+    return () => {
+      mounted = false;
+    };
+  }, [walletAddress]);
 
   const filtered = useMemo(() => {
-    return mockFiles.filter((file) => {
+    return files.filter((file) => {
       const nameMatch = file.name.toLowerCase().includes(query.toLowerCase());
       const algorithmMatch = algorithm === 'ALL' || file.algorithm === algorithm;
       return nameMatch && algorithmMatch;
     });
-  }, [algorithm, query]);
+  }, [algorithm, files, query]);
 
   return (
     <section>
@@ -58,7 +78,12 @@ export default function Vault() {
         </div>
       </div>
 
-      <FileTable files={filtered} />
+      {error && <p className="mb-5 border border-danger/50 bg-danger/10 p-3 font-display text-xs text-danger">{error}</p>}
+      {loading ? (
+        <div className="panel p-8 font-display text-lg text-cyan">LOADING VAULT<span className="animate-blink">_</span></div>
+      ) : (
+        <FileTable files={filtered} walletAddress={walletAddress} />
+      )}
     </section>
   );
 }

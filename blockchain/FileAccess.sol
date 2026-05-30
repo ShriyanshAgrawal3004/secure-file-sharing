@@ -19,6 +19,7 @@ contract FileAccess {
     event FileStored(uint256 indexed fileId, address indexed owner, string ipfsHash);
     event AccessRequested(uint256 indexed fileId, address indexed requester);
     event AccessGranted(uint256 indexed fileId, address indexed owner, address indexed user);
+    event AccessRevoked(uint256 indexed fileId, address indexed owner, address indexed user);
 
     /// @notice Store a new file IPFS hash
     function storeFile(string memory ipfsHash) public {
@@ -55,6 +56,16 @@ contract FileAccess {
 
         permissions[fileId][user] = true;
         emit AccessGranted(fileId, msg.sender, user);
+    }
+
+    /// @notice Owner revokes access from a user
+    function revokeAccess(uint256 fileId, address user) public {
+        require(fileId > 0 && fileId <= fileCount, "Invalid fileId");
+        require(msg.sender == files[fileId].owner, "Only owner");
+        require(user != address(0), "Invalid user");
+
+        permissions[fileId][user] = false;
+        emit AccessRevoked(fileId, msg.sender, user);
     }
 
     /// @notice Check whether a user has access: owner OR granted permission

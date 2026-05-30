@@ -2,11 +2,16 @@ from __future__ import annotations
 
 from typing import Any, Dict
 
+import os
+
+from dotenv import load_dotenv
 from web3 import Web3
 
 from contract_config import ABI, CONTRACT_ADDRESS
 
-GANACHE_URL = "http://127.0.0.1:7545"
+load_dotenv()
+
+GANACHE_URL = os.environ.get("GANACHE_URL", "http://127.0.0.1:7545")
 web3 = Web3(Web3.HTTPProvider(GANACHE_URL))
 
 
@@ -61,6 +66,19 @@ def grant_access(file_id: int, owner_address: str, user_address: str) -> str:
     user = _checksum(user_address)
 
     tx = contract.functions.grantAccess(int(file_id), user).transact({"from": owner})
+    web3.eth.wait_for_transaction_receipt(tx)
+    return tx.hex()
+
+
+def revoke_access(file_id: int, owner_address: str, user_address: str) -> str:
+    contract = _contract()
+    owner = _checksum(owner_address)
+    user = _checksum(user_address)
+
+    if not hasattr(contract.functions, "revokeAccess"):
+        raise ValueError("Active contract ABI does not expose revokeAccess")
+
+    tx = contract.functions.revokeAccess(int(file_id), user).transact({"from": owner})
     web3.eth.wait_for_transaction_receipt(tx)
     return tx.hex()
 
