@@ -50,6 +50,24 @@
 
    Look for: `"has_code": true`
 
+### If Ganache is restarted
+
+Ganache resets the chain when restarted. Re-deploy the contract with:
+
+```bash
+cd /Users/aamiribrahim/secure-file-sharing/backend
+python3 deploy_contract.py
+```
+
+### Optional: Bundle all uncommitted changes into a new branch
+
+If you want all current local changes bundled into a new branch, tell me and I’ll:
+
+- create a new branch
+- add all modified/new files
+- commit them
+- push the branch to origin
+
 ---
 
 ## Step 3: Start Backend (Flask API)
