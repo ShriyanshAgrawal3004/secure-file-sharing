@@ -1,4 +1,5 @@
 from datetime import datetime
+import uuid
 import os
 import pickle
 import sys
@@ -24,7 +25,15 @@ from blockchain_utils import (  # noqa: E402
     store_file,
 )
 from contract_config import ABI, CONTRACT_ADDRESS  # noqa: E402
-from crypto_utils import decrypt_aes, decrypt_chacha, encrypt_aes, encrypt_chacha  # noqa: E402
+from crypto_utils import (  # noqa: E402
+    decrypt_aes,
+    decrypt_chacha,
+    decrypt_rsa,
+    encrypt_aes,
+    encrypt_chacha,
+    encrypt_rsa,
+    generate_rsa_keypair,
+)
 from database import AccessRequest, FileIndex, User, get_db, init_db  # noqa: E402
 from ipfs_utils import IPFSUploadError, upload_to_ipfs  # noqa: E402
 from predict import predict_algorithm  # noqa: E402
@@ -40,10 +49,12 @@ CORS(
 UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
 ENCRYPTED_FOLDER = os.path.join(BASE_DIR, "encrypted")
 DECRYPTED_FOLDER = os.path.join(BASE_DIR, "decrypted")
+KEYS_FOLDER = os.path.join(BASE_DIR, "keys")
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(ENCRYPTED_FOLDER, exist_ok=True)
 os.makedirs(DECRYPTED_FOLDER, exist_ok=True)
+os.makedirs(KEYS_FOLDER, exist_ok=True)
 init_db()
 
 
@@ -334,19 +345,37 @@ def upload_file():
 
     if algo == "AES":
         enc_data = encrypt_aes(data)
+        key_id = None
     elif algo in {"CHACHA", "CHACHA20", "CHACHA-20"}:
         algo = "CHACHA"
         enc_data = encrypt_chacha(data)
+        key_id = None
+    elif algo == "RSA":
+        private_pem, public_pem = generate_rsa_keypair()
+        enc_data = encrypt_rsa(data, public_pem)
+        key_id = str(uuid.uuid4())
+        with open(os.path.join(KEYS_FOLDER, f"{key_id}_private.pem"), "w") as kf:
+            kf.write(private_pem)
+        with open(os.path.join(KEYS_FOLDER, f"{key_id}_public.pem"), "w") as kf:
+            kf.write(public_pem)
     else:
         algo = "AES"
         enc_data = encrypt_aes(data)
+        key_id = None
+
+    if isinstance(enc_data, bytes):
+        ciphertext = enc_data
+        meta_payload = {"rsa": True, "key_id": key_id}
+    else:
+        ciphertext = enc_data["ciphertext"]
+        meta_payload = enc_data
 
     enc_filename = file.filename + ".enc"
     enc_path = os.path.join(ENCRYPTED_FOLDER, enc_filename)
     with open(enc_path, "wb") as f:
-        f.write(enc_data["ciphertext"])
+        f.write(ciphertext)
     with open(enc_path + ".meta", "wb") as f:
-        pickle.dump(enc_data, f)
+        pickle.dump(meta_payload, f)
 
     ipfs_hash = None
     ipfs_error = None
@@ -382,6 +411,7 @@ def upload_file():
         "original_filename": file.filename,
         "algorithm": algo,
         "ipfs_hash": ipfs_hash,
+        "key_id": key_id,
     }
 
     if blockchain_data:
@@ -442,8 +472,20 @@ def decrypt_file(filename):
     with open(enc_path + ".meta", "rb") as f:
         enc_data = pickle.load(f)
 
-    enc_data["ciphertext"] = ciphertext
-    decrypted = decrypt_aes(enc_data) if "tag" in enc_data else decrypt_chacha(enc_data)
+    key_id = request.args.get("key_id")
+    if not key_id and isinstance(enc_data, dict):
+        key_id = enc_data.get("key_id")
+
+    if key_id:
+        private_key_path = os.path.join(KEYS_FOLDER, f"{key_id}_private.pem")
+        if not os.path.exists(private_key_path):
+            return {"error": "RSA key not found"}, 404
+        with open(private_key_path, "r") as kf:
+            private_pem = kf.read()
+        decrypted = decrypt_rsa(ciphertext, private_pem)
+    else:
+        enc_data["ciphertext"] = ciphertext
+        decrypted = decrypt_aes(enc_data) if "tag" in enc_data else decrypt_chacha(enc_data)
 
     output_path = os.path.join(DECRYPTED_FOLDER, "dec_" + original_filename)
     with open(output_path, "wb") as f:

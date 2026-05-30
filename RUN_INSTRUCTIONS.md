@@ -205,18 +205,18 @@ python3 app.py
 - **Cause:** Contract not deployed to the current Ganache instance
 - **Fix:** Re-deploy and update contract address:
 
-   ```bash
-   cd /Users/aamiribrahim/secure-file-sharing/backend
-   python3 deploy_contract.py
-   ```
+  ```bash
+  cd /Users/aamiribrahim/secure-file-sharing/backend
+  python3 deploy_contract.py
+  ```
 
-   Then verify:
+  Then verify:
 
-   ```bash
-   curl http://127.0.0.1:5000/blockchain/health
-   ```
+  ```bash
+  curl http://127.0.0.1:5000/blockchain/health
+  ```
 
-   Look for: `"has_code": true`
+  Look for: `"has_code": true`
 
 ### Port 5000 already in use:
 
