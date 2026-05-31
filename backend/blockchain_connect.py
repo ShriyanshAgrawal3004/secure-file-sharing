@@ -5,8 +5,6 @@ web3 = Web3(Web3.HTTPProvider(ganache_url))
 
 if web3.is_connected():
     print("Connected to Blockchain!")
+    print(web3.eth.accounts)
 else:
     print("Connection Failed")
-
-# Print accounts
-print(web3.eth.accounts)

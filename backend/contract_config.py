@@ -6,7 +6,7 @@ IMPORTANT:
 """
 
 # Replace this with your deployed address (Ganache changes addresses if you restart or redeploy).
-CONTRACT_ADDRESS = "0xb4f631D4298DDA3133D1e8011b56DAC8c741cD44"
+CONTRACT_ADDRESS = "0x5540fa082a87Ec5150f6Ef20C5777B3F6A1bB125"
 # ABI for `blockchain/FileAccess.sol`
 ABI = [
   {
@@ -69,6 +69,31 @@ ABI = [
         "type": "address"
       },
       {
+        "indexed": True,
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      }
+    ],
+    "name": "AccessRevoked",
+    "type": "event"
+  },
+  {
+    "anonymous": False,
+    "inputs": [
+      {
+        "indexed": True,
+        "internalType": "uint256",
+        "name": "fileId",
+        "type": "uint256"
+      },
+      {
+        "indexed": True,
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      },
+      {
         "indexed": False,
         "internalType": "string",
         "name": "ipfsHash",
@@ -92,6 +117,24 @@ ABI = [
       }
     ],
     "name": "grantAccess",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "fileId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      }
+    ],
+    "name": "revokeAccess",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
