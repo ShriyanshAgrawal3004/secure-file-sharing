@@ -4,7 +4,6 @@ import { Link, useParams } from 'react-router-dom';
 import api from '../api.js';
 import AlgorithmBadge from '../components/AlgorithmBadge.jsx';
 import HashCard from '../components/HashCard.jsx';
-import SecurityScore from '../components/SecurityScore.jsx';
 import useAuth from '../hooks/useAuth.js';
 import { fileToViewModel, truncateAddress } from '../utils/format.js';
 
@@ -36,7 +35,6 @@ export default function FileDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [actioning, setActioning] = useState(false);
-  const [confirmRevoke, setConfirmRevoke] = useState('');
 
   const view = useMemo(() => (file ? fileToViewModel(file) : null), [file]);
   const isOwner = file?.owner_wallet?.toLowerCase() === walletAddress.toLowerCase();
@@ -62,11 +60,11 @@ export default function FileDetail() {
     load();
   }, [id]);
 
-  async function grant(requester) {
+  async function grant(requester, deny = false) {
     setActioning(true);
     setError('');
     try {
-      await api.post('/grant_access', { file_id: Number(id), owner_address: walletAddress, user_address: requester });
+      await api.post(deny ? '/deny_access' : '/grant_access', { file_id: Number(id), owner_address: walletAddress, user_address: requester });
       await load();
     } catch (requestError) {
       setError(requestError.response?.data?.error || requestError.message);
@@ -75,18 +73,8 @@ export default function FileDetail() {
     }
   }
 
-  async function revoke(requester) {
-    setActioning(true);
-    setError('');
-    try {
-      await api.post('/revoke_access', { file_id: Number(id), owner_address: walletAddress, user_address: requester });
-      setConfirmRevoke('');
-      await load();
-    } catch (requestError) {
-      setError(requestError.response?.data?.error || requestError.message);
-    } finally {
-      setActioning(false);
-    }
+  async function deny(requester) {
+    return grant(requester, true);
   }
 
   if (loading) {
@@ -145,7 +133,6 @@ export default function FileDetail() {
         </motion.div>
 
         <div className="grid gap-5">
-          <SecurityScore sensitivity={view.sensitivity} />
           <div className="grid gap-4 sm:grid-cols-2">
             <HashCard label="IPFS HASH" value={view.ipfsHash} />
             <HashCard label="TX HASH" value={view.txHash} />
@@ -158,7 +145,7 @@ export default function FileDetail() {
         <div className="mt-5 grid gap-3">
           {pending.length ? (
             pending.map((item) => (
-              <RequestRow key={item.id} item={item} actioning={actioning} onGrant={grant} onDeny={revoke} />
+              <RequestRow key={item.id} item={item} actioning={actioning} onGrant={grant} onDeny={deny} />
             ))
           ) : (
             <p className="font-display text-sm text-cyan">NO PENDING REQUESTS<span className="animate-blink">_</span></p>
@@ -173,15 +160,7 @@ export default function FileDetail() {
             granted.map((item) => (
               <div key={item.id} className="grid gap-3 border border-vault-border bg-black/20 p-3 sm:grid-cols-[1fr_auto] sm:items-center">
                 <p className="font-display text-sm text-text-primary">{truncateAddress(item.requester_address)}</p>
-                {confirmRevoke === item.requester_address ? (
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-display text-[11px] text-danger">REVOKE ACCESS FROM {truncateAddress(item.requester_address)}?</span>
-                    <button type="button" onClick={() => revoke(item.requester_address)} disabled={actioning} className="amber-button px-3 py-2 text-[11px]">CONFIRM</button>
-                    <button type="button" onClick={() => setConfirmRevoke('')} className="cyan-button px-3 py-2 text-[11px]">CANCEL</button>
-                  </div>
-                ) : (
-                  <button type="button" onClick={() => setConfirmRevoke(item.requester_address)} className="amber-button px-3 py-2 text-[11px]">REVOKE</button>
-                )}
+                <span className="font-display text-[11px] text-text-muted">ACCESS GRANTED</span>
               </div>
             ))
           ) : (

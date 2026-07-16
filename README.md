@@ -69,7 +69,6 @@ secure-file-sharing/
 ### Contract functions
 - `addFile(ipfsHash)`
 - `grantAccess(fileId, user)`
-- `revokeAccess(fileId, user)`
 - `hasAccess(fileId, user)`
 - `getFile(fileId)` (access-checked)
 

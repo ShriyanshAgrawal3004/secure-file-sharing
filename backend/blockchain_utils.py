@@ -70,19 +70,6 @@ def grant_access(file_id: int, owner_address: str, user_address: str) -> str:
     return tx.hex()
 
 
-def revoke_access(file_id: int, owner_address: str, user_address: str) -> str:
-    contract = _contract()
-    owner = _checksum(owner_address)
-    user = _checksum(user_address)
-
-    if not hasattr(contract.functions, "revokeAccess"):
-        raise ValueError("Active contract ABI does not expose revokeAccess")
-
-    tx = contract.functions.revokeAccess(int(file_id), user).transact({"from": owner})
-    web3.eth.wait_for_transaction_receipt(tx)
-    return tx.hex()
-
-
 def has_access(file_id: int, user_address: str) -> bool:
     contract = _contract()
     user = _checksum(user_address)

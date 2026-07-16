@@ -1,21 +1,23 @@
 import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
 import { useEffect, useMemo, useState } from 'react';
 
+// Sensitivity-based security score mapping
+// CRITICAL: 90%+ (highest security), HIGH: 75-89%, MEDIUM: 60-74%, LOW: 40-59%
 const scoreMap = {
-  LOW: 30,
-  MEDIUM: 55,
-  HIGH: 75,
-  CRITICAL: 95
+  LOW: 50,           // 40-59%
+  MEDIUM: 70,        // 60-74%
+  HIGH: 82,          // 75-89%
+  CRITICAL: 92       // 90%+
 };
 
 function colorForScore(score) {
-  if (score >= 88) return '#FF1744';
-  if (score >= 65) return '#FFB400';
-  return '#00E5FF';
+  if (score >= 85) return '#FF1744';      // Red for CRITICAL/HIGH
+  if (score >= 70) return '#FFB400';      // Orange for MEDIUM
+  return '#00E5FF';                       // Cyan for LOW
 }
 
 export default function SecurityScore({ sensitivity }) {
-  const score = scoreMap[sensitivity] || 55;
+  const score = scoreMap[sensitivity] || 70;
   const progress = useMotionValue(0);
   const pathLength = useTransform(progress, [0, 100], [0, score / 100]);
   const [count, setCount] = useState(0);

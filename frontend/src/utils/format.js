@@ -24,6 +24,18 @@ export function formatDate(value) {
   }).format(new Date(value));
 }
 
+const SENSITIVITY_LABELS = {
+  0: 'LOW',
+  1: 'MEDIUM',
+  2: 'HIGH',
+  3: 'CRITICAL'
+};
+
+export function sensitivityLabel(value) {
+  const n = Number(value);
+  return SENSITIVITY_LABELS[n] ?? String(value ?? 'UNKNOWN');
+}
+
 export function fileToViewModel(file) {
   return {
     id: String(file.file_id),
@@ -34,7 +46,8 @@ export function fileToViewModel(file) {
     timestamp: formatDate(file.created_at),
     createdAt: file.created_at,
     algorithm: file.algorithm,
-    sensitivity: file.sensitivity,
+    sensitivity: sensitivityLabel(file.sensitivity),
+    rawSensitivity: file.sensitivity,
     accessStatus: 'OWNER',
     ipfsHash: file.ipfs_hash,
     txHash: file.tx_hash,

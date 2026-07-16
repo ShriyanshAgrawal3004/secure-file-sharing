@@ -60,7 +60,7 @@ export default function Vault() {
         <div>
           <span className="terminal-label text-[11px]">ALGORITHM</span>
           <div className="mt-2 flex border border-vault-border">
-            {['ALL', 'AES', 'CHACHA'].map((option, index) => (
+            {['ALL', 'AES', 'CHACHA', 'RSA'].map((option, index) => (
               <button
                 key={option}
                 type="button"

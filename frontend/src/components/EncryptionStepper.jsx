@@ -8,11 +8,15 @@ function truncate(value = '') {
 }
 
 export default function EncryptionStepper({ stage, elapsed, result, error }) {
+  const algoDetail = result?.algorithm
+    ? `ML SELECTED: ${result.algorithm}`
+    : 'ML MODEL ANALYSING FILE…';
+
   const stages = [
     {
       id: 1,
       title: 'ENCRYPTING FILE',
-      detail: result?.algorithm ? `ALGORITHM: ${result.algorithm}` : 'DERIVING CIPHER PARAMETERS'
+      detail: algoDetail
     },
     {
       id: 2,
