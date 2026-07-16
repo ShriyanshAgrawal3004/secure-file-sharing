@@ -6,9 +6,9 @@ IMPORTANT:
 """
 
 # Replace this with your deployed address (Ganache changes addresses if you restart or redeploy).
-CONTRACT_ADDRESS = "0xb4f631D4298DDA3133D1e8011b56DAC8c741cD44"
-# ABI for `blockchain/FileAccess.sol`
-ABI = [
+CONTRACT_ADDRESS = "0xa6e964B3e4251C698d45f32C33746AD618aC183A"
+# ABI for `blockchain/FileAccess.sol` (converted to Python literals)
+ABI =[
   {
     "anonymous": False,
     "inputs": [

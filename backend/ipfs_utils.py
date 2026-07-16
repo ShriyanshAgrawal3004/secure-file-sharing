@@ -1,5 +1,6 @@
 import requests
 import os
+from typing import Optional
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -19,7 +20,7 @@ PINATA_URL = "https://api.pinata.cloud/pinning/pinFileToIPFS"
 
 
 class IPFSUploadError(Exception):
-    def __init__(self, message: str, status_code: int | None = None, details: str | None = None):
+    def __init__(self, message: str, status_code: Optional[int] = None, details: Optional[str] = None):
         super().__init__(message)
         self.status_code = status_code
         self.details = details

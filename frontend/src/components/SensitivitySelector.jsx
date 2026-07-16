@@ -1,31 +1,34 @@
+// apiValue maps directly to the backend sensitivity int (0–3).
+// The ML model uses file features + sensitivity to predict the algorithm;
+// descriptions below reflect the model's learned tendencies, not hard rules.
 const levels = [
   {
     key: 'LOW',
-    apiValue: '1',
+    apiValue: '0',
     glow: 'shadow-[0_0_10px_rgba(255,180,0,0.18)]',
-    description: 'LOW → AES selected for efficient standard encryption',
-    tooltip: 'AES likely. Good for routine documents with low threat exposure.'
+    description: 'LOW → ML model predicts ChaCha20 for speed-priority storage',
+    tooltip: 'ChaCha20 likely. Optimised for throughput on low-risk payloads.'
   },
   {
     key: 'MEDIUM',
-    apiValue: '2',
+    apiValue: '1',
     glow: 'shadow-[0_0_16px_rgba(255,180,0,0.25)]',
-    description: 'MEDIUM → AES selected with elevated handling priority',
-    tooltip: 'AES likely. Balanced throughput and stronger storage posture.'
+    description: 'MEDIUM → ML model selects AES or ChaCha20 based on file entropy',
+    tooltip: 'AES or ChaCha20. Model weighs entropy, compressibility, and size.'
   },
   {
     key: 'HIGH',
-    apiValue: '3',
+    apiValue: '2',
     glow: 'shadow-[0_0_22px_rgba(255,180,0,0.33)]',
-    description: 'HIGH → ChaCha20 selected for hardened payload protection',
-    tooltip: 'ChaCha20 likely. Better for high-sensitivity encrypted storage.'
+    description: 'HIGH → ML model predicts AES for strong symmetric encryption',
+    tooltip: 'AES likely. Elevated sensitivity shifts model toward AES-256.'
   },
   {
     key: 'CRITICAL',
     apiValue: '3',
     glow: 'shadow-[0_0_30px_rgba(255,180,0,0.45)]',
-    description: 'CRITICAL → ChaCha20 selected for maximum entropy',
-    tooltip: 'ChaCha20 likely. Reserved for maximum sensitivity and warning posture.'
+    description: 'CRITICAL → RSA enforced for asymmetric key-based security',
+    tooltip: 'RSA guaranteed. Critical sensitivity always triggers asymmetric encryption.'
   }
 ];
 
@@ -65,8 +68,8 @@ export default function SensitivitySelector({ value, onChange }) {
           );
         })}
       </div>
-      <p className="mt-4 border-l border-amber/50 pl-3 font-display text-xs uppercase text-amber">
-        {active.description}
+      <p className="mt-3 border border-vault-border bg-black/30 px-3 py-2 font-display text-[11px] text-cyan">
+        ML <span className="text-text-muted">▸</span> {active.description.replace(/^[A-Z]+ → /, '')}
       </p>
     </section>
   );

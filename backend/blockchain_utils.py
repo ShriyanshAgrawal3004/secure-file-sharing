@@ -2,11 +2,16 @@ from __future__ import annotations
 
 from typing import Any, Dict
 
+import os
+
+from dotenv import load_dotenv
 from web3 import Web3
 
 from contract_config import ABI, CONTRACT_ADDRESS
 
-GANACHE_URL = "http://127.0.0.1:7545"
+load_dotenv()
+
+GANACHE_URL = os.environ.get("GANACHE_URL", "http://127.0.0.1:7545")
 web3 = Web3(Web3.HTTPProvider(GANACHE_URL))
 
 

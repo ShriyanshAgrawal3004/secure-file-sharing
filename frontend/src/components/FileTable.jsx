@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import AlgorithmBadge from './AlgorithmBadge.jsx';
 
-export default function FileTable({ files }) {
+export default function FileTable({ files, walletAddress }) {
   if (!files.length) {
     return (
       <div className="panel p-8 font-display text-lg text-cyan">
@@ -44,7 +44,7 @@ export default function FileTable({ files }) {
                 <td className="px-4 py-4">
                   <div className="flex translate-x-4 justify-end gap-2 opacity-0 transition group-hover:translate-x-0 group-hover:opacity-100">
                     <Link className="cyan-button px-3 py-2 text-[11px]" to={`/file/${file.id}`}>VIEW</Link>
-                    <a className="amber-button px-3 py-2 text-[11px]" href={`http://127.0.0.1:5000/decrypt/${file.name}`}>DOWNLOAD</a>
+                    <a className="amber-button px-3 py-2 text-[11px]" href={`http://127.0.0.1:5000/decrypt/${encodeURIComponent(file.name)}?wallet_address=${walletAddress}`}>DOWNLOAD</a>
                   </div>
                 </td>
               </motion.tr>
@@ -76,7 +76,7 @@ export default function FileTable({ files }) {
             </div>
             <div className="mt-5 flex gap-2">
               <Link className="cyan-button flex-1 px-3 py-2 text-center text-xs" to={`/file/${file.id}`}>VIEW</Link>
-              <a className="amber-button flex-1 px-3 py-2 text-center text-xs" href={`http://127.0.0.1:5000/decrypt/${file.name}`}>DOWNLOAD</a>
+              <a className="amber-button flex-1 px-3 py-2 text-center text-xs" href={`http://127.0.0.1:5000/decrypt/${encodeURIComponent(file.name)}?wallet_address=${walletAddress}`}>DOWNLOAD</a>
             </div>
           </motion.article>
         ))}

@@ -1,6 +1,12 @@
-flask 
-web3 
-cryptography 
-scikit-learn 
-ipfshttpclient 
+flask
+flask-cors
+SQLAlchemy
+web3
+cryptography
+scikit-learn
+ipfshttpclient
 python-dotenv
+pycryptodome
+requests
+numpy
+pandas
